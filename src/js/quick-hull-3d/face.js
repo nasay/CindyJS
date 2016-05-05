@@ -100,21 +100,22 @@ Face.prototype.getEdge = function(index) {
     return halfEdge;
 };
 
-Face.prototype.getFirstEdge = function() {
-    return this.halfEdge0;
-};
-
 Face.prototype.findEdge = function(tailVertex, headVertex) {
     var halfEdge = this.halfEdge0;
 
     do {
-        if (halfEdge.tail() === tailVertex && halfEdge.head() === headVertex) {
-            return halfEdge;
+        if (halfEdge.head().index === headVertex.index) {
+            if (halfEdge.tail().index === tailVertex.index) {
+                return halfEdge;
+            } else {
+                return null;
+            }
         }
 
         halfEdge = halfEdge.next;
     } while (halfEdge !== this.halfEdge);
 
+    return null;
 };
 
 Face.prototype.distanceToPlane = function(point) {
