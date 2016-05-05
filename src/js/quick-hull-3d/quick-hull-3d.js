@@ -1,3 +1,9 @@
+var t0, t1;
+
+function p(name) {
+    console.log(name, t1-t0);
+}
+
 /**
  * Creates a convex hull object.
  * If set of points is specialized initializes it to the convex hull.
@@ -92,7 +98,7 @@ QuickHull3D.prototype._removeAllPointFromFace = function(face) {
  */
 QuickHull3D.prototype.build = function(points, numberOfPoints) {
     // if first element is a number then it is array of coordinates, else - array of points
-    var numberOfGivenPoints = points[0].ctype === 'number' ? points.length / 3 : points.length;
+    var numberOfGivenPoints = typeof points[0] === 'number' ? points.length / 3 : points.length;
 
     if (numberOfPoints === void 0) {
         numberOfPoints = numberOfGivenPoints;
@@ -188,7 +194,7 @@ QuickHull3D.prototype._findHalfEdge = function(tail, head) {
 QuickHull3D.prototype._setHull = function(coordinates, numberOfPoints, faceIndices, numberOfFaces) {
     this.initBuffers(numberOfPoints);
     this.setPoints(coordinates, numberOfPoints);
-    this._computeMaxAndMin();
+    this._computeaxAndMin();
 
     var face, he, heOpp;
 
@@ -196,7 +202,7 @@ QuickHull3D.prototype._setHull = function(coordinates, numberOfPoints, faceIndic
         face = Face.create(this.pointBuffer, faceIndices[i]);
         he = face.he0;
         do {
-            heOpp = this._findHalfEdge(he.head(), he.tail());
+            heOpp = this._findHalfEdge(he.head, he.tail());
             if (heOpp !== null) {
                 he.setOpposite(heOpp);
             }
@@ -233,7 +239,7 @@ QuickHull3D.prototype._initBuffers = function(numberOfPoints) {
  * Sets passed points to this.pointBuffer
  */
 QuickHull3D.prototype._setPoints = function(points) {
-    if (points[0].ctype === 'number') {
+    if (typeof points[0] === 'number') {
         this.pointBuffer.forEach(function(vertex, i) {
             vertex.point = new Vector(points[3 * i + 0],
                 points[3 * i + 1],
@@ -345,8 +351,10 @@ QuickHull3D.prototype._createInitialSimplex = function() {
 
     u0 = VectorOperations.normalize(u0);
 
+    var l = this.pointBuffer.length;
+
     this.pointBuffer.forEach(function(vertex) {
-        if (vertex === vertices[0] || vertex === vertices[1]) {
+        if (vertex.index === vertices[0].index || vertex.index === vertices[1].index) {
             return;
         }
 
@@ -371,9 +379,9 @@ QuickHull3D.prototype._createInitialSimplex = function() {
         d0 = VectorOperations.scalproduct(vertices[2].point, normal);
 
     this.pointBuffer.forEach(function(vertex) {
-        if (vertex === vertices[0] ||
-            vertex === vertices[1] ||
-            vertex === vertices[2]) {
+        if (vertex.index === vertices[0].index ||
+            vertex.index === vertices[1].index ||
+            vertex.index === vertices[2].index) {
             return;
         }
 
@@ -428,10 +436,10 @@ QuickHull3D.prototype._createInitialSimplex = function() {
         var maxDistance = this.tolerance,
             maxFace;
 
-        if (vertex === vertices[0] ||
-            vertex === vertices[1] ||
-            vertex === vertices[2] ||
-            vertex === vertices[3]) {
+        if (vertex.index === vertices[0].index ||
+            vertex.index === vertices[1].index ||
+            vertex.index === vertices[2].index ||
+            vertex.index === vertices[3].index) {
             return;
         }
 
@@ -469,7 +477,7 @@ QuickHull3D.prototype._getFaceIndices = function(face, flags) {
         indices = [];
 
     do {
-        index = halfEdge.head().index;
+        index = halfEdge.head.index;
 
         if (pointRelative) {
             index = this.vertexPointIndices[index];
@@ -648,7 +656,7 @@ QuickHull3D.prototype._calculateHorizon = function(eyePoint, edge0, face, horizo
         edge0 = face.getEdge(0);
         edge = edge0;
     } else {
-        edge = edge0.getNext();
+        edge = edge0.next;
     }
 
     var oppositeFace;
@@ -673,7 +681,7 @@ QuickHull3D.prototype._calculateHorizon = function(eyePoint, edge0, face, horizo
 };
 
 QuickHull3D.prototype._addAdjoiningFace = function(eyeVertex, halfEdge) {
-    var face = Face.createTriangle(eyeVertex, halfEdge.tail(), halfEdge.head());
+    var face = Face.createTriangle(eyeVertex, halfEdge.tail(), halfEdge.head);
 
     this.faces.push(face);
     face.getEdge(-1).setOpposite(halfEdge.opposite);
@@ -700,7 +708,7 @@ QuickHull3D.prototype._addNewFaces = function(newFaces, eyeVertex, horizon) {
             hedgeSideBegin = hedgeSide;
         }
 
-        this.newFaces.push(hedgeSide.getFace());
+        this.newFaces.push(hedgeSide.face);
         hedgeSidePrev = hedgeSide;
     }, this);
 
@@ -799,7 +807,7 @@ QuickHull3D.prototype._markFaceVertices = function(face, mark) {
     var halfEdge = face.halfEdge0;
 
     do {
-        halfEdge.head().index = mark;
+        halfEdge.head.index = mark;
         halfEdge = halfEdge.next;
     } while (halfEdge !== face.halfEdge0);
 };

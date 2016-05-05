@@ -1,5 +1,7 @@
+window.nEdges = 0;
 var HalfEdge = function(vertex, face) {
-    this._vertex = vertex;
+    nEdges++;
+    this.head = vertex;
     this.face = face;
 };
 
@@ -8,32 +10,8 @@ HalfEdge.prototype.setOpposite = function(edge) {
     edge.opposite = this;
 };
 
-HalfEdge.prototype.head = function() {
-    return this._vertex;
-};
-
-HalfEdge.prototype.getPrev = function() {
-    return this.previous;
-};
-
-HalfEdge.prototype.setPrev = function(edge) {
-    this.previous = edge;
-};
-
-HalfEdge.prototype.getNext = function() {
-    return this.next;
-};
-
-HalfEdge.prototype.setNext = function(edge) {
-    this.next = edge;
-};
-
-HalfEdge.prototype.getFace = function() {
-    return this.face;
-};
-
 HalfEdge.prototype.tail = function() {
-    return (this.previous !== null) ? this.previous.head() : null;
+    return (this.previous !== null) ? this.previous.head : null;
 };
 
 HalfEdge.prototype.oppositeFace = function() {
@@ -43,17 +21,17 @@ HalfEdge.prototype.oppositeFace = function() {
 HalfEdge.prototype.getVertexString = function() {
     var tail = this.tail();
 
-    return (tail !== null) ? (tail.index + '-' + this._vertex.index) : ('?-' + this._vertex.index);
+    return (tail !== null) ? (tail.index + '-' + this.head.index) : ('?-' + this.head.index);
 };
 
 HalfEdge.prototype.length = function() {
     var tail = this.tail();
 
-    return (tail !== null) ? VectorOperations.abs(VectorOperations.sub(this._vertex.point, tail.point)) : -1;
+    return (tail !== null) ? VectorOperations.abs(VectorOperations.sub(this.head.point, tail.point)) : -1;
 };
 
 HalfEdge.prototype.lengthSquared = function() {
     var tail = this.tail();
 
-    return (tail !== null) ? VectorOperations.abs2(VectorOperations.sub(this._vertex.point, tail.point)) : -1;
+    return (tail !== null) ? VectorOperations.abs2(VectorOperations.sub(this.head.point, tail.point)) : -1;
 };
