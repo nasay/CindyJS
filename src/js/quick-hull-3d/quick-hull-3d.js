@@ -188,7 +188,7 @@ QuickHull3D.prototype._findHalfEdge = function(tail, head) {
 QuickHull3D.prototype._setHull = function(coordinates, numberOfPoints, faceIndices, numberOfFaces) {
     this.initBuffers(numberOfPoints);
     this.setPoints(coordinates, numberOfPoints);
-    this.computeMaxAndMin();
+    this._computeMaxAndMin();
 
     var face, he, heOpp;
 
