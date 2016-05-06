@@ -4,12 +4,13 @@ var Face = function() {
 };
 
 var FaceOperations = {};
+var FO = FaceOperations;
 
 Face.VISIBLE = 1;
 Face.NON_CONVEX = 2;
 Face.DELETED = 3;
 
-FaceOperations.computeCentroid = function(face) {
+FO.computeCentroid = function(face) {
     var halfEdge = face.halfEdge0;
     face.centroid = VectorOperations.zerovector();
 
@@ -21,7 +22,7 @@ FaceOperations.computeCentroid = function(face) {
     face.centroid = VectorOperations.scaldiv(face.numberOfVertices, face.centroid);
 };
 
-FaceOperations.computeNormal = function(face, minArea) {
+FO.computeNormal = function(face, minArea) {
     var halfEdgeMax, lenSqrMax, lenMax,
         halfEdge, lenSqr,
         headPoint, tailPoint, u, dot;
@@ -86,7 +87,7 @@ FaceOperations.computeNormal = function(face, minArea) {
     }
 };
 
-FaceOperations.getEdge = function(face, index) {
+FO.getEdge = function(face, index) {
     var halfEdge = face.halfEdge0;
 
     while (index > 0) {
@@ -102,7 +103,7 @@ FaceOperations.getEdge = function(face, index) {
     return halfEdge;
 };
 
-FaceOperations.findEdge = function(face, tailVertex, headVertex) {
+FO.findEdge = function(face, tailVertex, headVertex) {
     var halfEdge = face.halfEdge0;
 
     do {
@@ -120,11 +121,11 @@ FaceOperations.findEdge = function(face, tailVertex, headVertex) {
     return null;
 };
 
-FaceOperations.distanceToPlane = function(face, point) {
+FO.distanceToPlane = function(face, point) {
     return VectorOperations.scalproduct(face.normal, point) - face.planeOffset;
 };
 
-FaceOperations.getVertexString = function(face) {
+FO.getVertexString = function(face) {
     var result = face.halfEdge0.head.index,
         halfEdge = face.halfEdge0.next;
 
@@ -136,7 +137,7 @@ FaceOperations.getVertexString = function(face) {
     return result;
 };
 
-FaceOperations.getVertexIndices = function(face) {
+FO.getVertexIndices = function(face) {
     var result = [],
         halfEdge = face.halfEdge0;
 
@@ -148,7 +149,7 @@ FaceOperations.getVertexIndices = function(face) {
     return result;
 };
 
-FaceOperations._checkConsistency = function(face) {
+FO._checkConsistency = function(face) {
     // do a sanity check on the face
     var hedge = face.halfEdge0;
     var maxd = 0;
@@ -183,7 +184,7 @@ FaceOperations._checkConsistency = function(face) {
                 ' not on hull');
         }
 
-        var d = Math.abs(FaceOperations.distanceToPlane(face, hedge.head.point));
+        var d = Math.abs(FO.distanceToPlane(face, hedge.head.point));
 
         if (d > maxd) {
             maxd = d;
@@ -198,7 +199,7 @@ FaceOperations._checkConsistency = function(face) {
     }
 };
 
-FaceOperations.mergeAdjacentFace = function(face, hedgeAdj, discarded) {
+FO.mergeAdjacentFace = function(face, hedgeAdj, discarded) {
     var numDiscarded = 0,
         oppFace = hedgeAdj.oppositeFace();
 
@@ -236,26 +237,26 @@ FaceOperations.mergeAdjacentFace = function(face, hedgeAdj, discarded) {
     // handle the half edges at the head
     var discardedFace;
 
-    discardedFace = FaceOperations._connectHalfEdges(face, hedgeOppPrev, hedgeAdjNext);
+    discardedFace = FO._connectHalfEdges(face, hedgeOppPrev, hedgeAdjNext);
 
     if (discardedFace !== null) {
         discarded[numDiscarded++] = discardedFace;
     }
 
     // handle the half edges at the tail
-    discardedFace = FaceOperations._connectHalfEdges(face, hedgeAdjPrev, hedgeOppNext);
+    discardedFace = FO._connectHalfEdges(face, hedgeAdjPrev, hedgeOppNext);
 
     if (discardedFace !== null) {
         discarded[numDiscarded++] = discardedFace;
     }
 
-    FaceOperations._computeNormalAndCentroid(face);
-    FaceOperations._checkConsistency(face);
+    FO._computeNormalAndCentroid(face);
+    FO._checkConsistency(face);
 
     return numDiscarded;
 };
 
-FaceOperations.getSquaredArea = function(face, hedge0, hedge1) {
+FO.getSquaredArea = function(face, hedge0, hedge1) {
     // return the squared area of the triangle defined
     // by the half edge hedge0 and the point at the
     // head of hedge1.
@@ -279,7 +280,7 @@ FaceOperations.getSquaredArea = function(face, hedge0, hedge1) {
     return x * x + y * y + z * z;
 };
 
-FaceOperations.triangulate = function(face, newFaces, minArea) {
+FO.triangulate = function(face, newFaces, minArea) {
     if (face.numberOfVertices < 4) {
         return;
     }
@@ -292,7 +293,7 @@ FaceOperations.triangulate = function(face, newFaces, minArea) {
     var newFace;
 
     for (hedge = hedge.next; hedge !== face.halfEdge0.previous; hedge = hedge.next) {
-        newFace = FaceOperations.createTriangle(v0, hedge.previous.head, hedge.head, minArea);
+        newFace = FO.createTriangle(v0, hedge.previous.head, hedge.head, minArea);
         newFace.halfEdge0.next.setOpposite(oppPrev);
         newFace.halfEdge0.prev.setOpposite(hedge.opposite);
         oppPrev = newFace.halfEdge0;
@@ -311,19 +312,19 @@ FaceOperations.triangulate = function(face, newFaces, minArea) {
     hedge.next = face.halfEdge0.prev;
     hedge.next.previous = hedge;
 
-    FaceOperations.computeNormalAndCentroid(face, minArea);
-    FaceOperations.checkConsistency(face);
+    FO.computeNormalAndCentroid(face, minArea);
+    FO.checkConsistency(face);
 
     for (var f = face0; f !== null; f = f.next) {
         f.checkConsistency();
     }
 };
 
-FaceOperations._computeNormalAndCentroid = function(face, minArea) {
+FO._computeNormalAndCentroid = function(face, minArea) {
     var numberOfVertices, halfEdge;
 
-    FaceOperations.computeNormal(face, minArea);
-    FaceOperations.computeCentroid(face);
+    FO.computeNormal(face, minArea);
+    FO.computeCentroid(face);
     face.planeOffset = VectorOperations.scalproduct(face.normal, face.centroid);
 
     if (minArea !== void 0) {
@@ -336,12 +337,12 @@ FaceOperations._computeNormalAndCentroid = function(face, minArea) {
         } while (halfEdge !== face.halfEdge0);
 
         if (numberOfVertices !== face.numberOfVertices) {
-            throw new Error('Face ' + FaceOperations.getVertexString(face) + ' should be ' + face.numberOfVertices);
+            throw new Error('Face ' + FO.getVertexString(face) + ' should be ' + face.numberOfVertices);
         }
     }
 };
 
-FaceOperations._connectHalfEdges = function(face, hedgePrev, hedge) {
+FO._connectHalfEdges = function(face, hedgePrev, hedge) {
     var discardedFace = null,
         oppFace = hedge.oppositeFace(),
         hedgeOpp;
@@ -372,7 +373,7 @@ FaceOperations._connectHalfEdges = function(face, hedgePrev, hedge) {
         hedge.opposite = hedgeOpp;
         hedgeOpp.opposite = hedge;
 
-        FaceOperations._computeNormalAndCentroid(oppFace);
+        FO._computeNormalAndCentroid(oppFace);
     } else {
         hedgePrev.next = hedge;
         hedge.previous = hedgePrev;
@@ -407,7 +408,7 @@ FaceOperations._connectHalfEdges = function(face, hedgePrev, hedge) {
 //};
 
 
-FaceOperations.create = function(vertices, indices) {
+FO.create = function(vertices, indices) {
     var face = new Face(),
         hePrev = null;
 
@@ -427,12 +428,12 @@ FaceOperations.create = function(vertices, indices) {
     face.halfEdge0.setPrev(hePrev);
     hePrev.setNext(face.halfEdge0);
 
-    FaceOperations._computeNormalAndCentroid(face);
+    FO._computeNormalAndCentroid(face);
 
     return face;
 };
 
-FaceOperations.createTriangle = function(vertex0, vertex1, vertex2, minArea) {
+FO.createTriangle = function(vertex0, vertex1, vertex2, minArea) {
     minArea = minArea || 0;
 
     var face = new Face(),
@@ -451,7 +452,7 @@ FaceOperations.createTriangle = function(vertex0, vertex1, vertex2, minArea) {
 
     face.halfEdge0 = halfEdge0;
 
-    FaceOperations._computeNormalAndCentroid(face, minArea);
+    FO._computeNormalAndCentroid(face, minArea);
 
     return face;
 };
