@@ -111,7 +111,10 @@ QuickHull3D.prototype.build = function(points, numberOfPoints) {
 
     this._initBuffers(numberOfPoints);
     this._setPoints(points);
+    var t0 = performance.now();
     this._buildHull();
+    var t1 = performance.now();
+    console.log('build hull', t1-t0);
 };
 
 QuickHull3D.prototype.triangulate = function() {
