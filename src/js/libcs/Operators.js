@@ -2999,7 +2999,7 @@ eval_helper.shapeop = function(a, b, op) {
     var solution_paths = new ClipperLib.Paths();
     cpr.Execute(clipType, solution_paths, subject_fillType, clip_fillType);
     ClipperLib.JS.ScaleDownPaths(solution_paths, scale);
-    //    console.log(JSON.stringify(solution_paths));    
+    //    console.log(JSON.stringify(solution_paths));
     return {
         ctype: "shape",
         type: "polygon",
@@ -3258,7 +3258,7 @@ evaluator.replace$2 = function(args, modifs) {
         return s;
     }
 
-    //////////////// 
+    ////////////////
 
     var v0 = evaluate(args[0]);
     var v1 = evaluate(args[1]);
@@ -4810,3 +4810,13 @@ evaluator.load$3 = function(args, modifs) {
     }
 
 };
+
+evaluator.pslq = function(args) {
+    var x = evaluate(args[0]);
+    var tau = evaluate(args[1]);
+
+    var pslq = new PSLQ(tau);
+
+    return pslq.find(x);
+};
+
