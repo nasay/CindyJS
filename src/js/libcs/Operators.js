@@ -4820,3 +4820,131 @@ evaluator.pslq = function(args) {
     return pslq.find(x);
 };
 
+/**
+ * Tries to generate string a, b, c such that
+ * x = a + b * sqrt(c)
+ */
+evaluator.guess = function(args) {
+    var x = evaluate(args[0]);
+    var result, coefficients;
+    var pslq = new PSLQ();
+    var p, q, r;
+    var a, b, c, a_nom, a_denom, b_denom;
+
+    // Do PSLQ for [1, x], find p, q such that
+    // p*1 + q*x = 0
+    var list = List.turnIntoCSList([CSNumber.real(1), x]);
+    coefficients = pslq.find(list);
+
+    if (coefficients) {
+        p = coefficients.value[0];
+        q = coefficients.value[1];
+
+        if (Math.abs(p.value.real) < 1000 && Math.abs(q.value.real) < 1000) {
+            result = (p.value.real * q.value.real < 0) ? '' : '-';
+            result += Math.abs(p.value.real) + '/' + Math.abs(q.value.real);
+
+            return {
+                ctype: 'string',
+                value: result
+            };
+        }
+    }
+
+    // Do PSLQ for [1, x, x^2], find p, q, r such that
+    // p*1 + q*x + r*x^2 = 0
+    list = List.turnIntoCSList([CSNumber.real(1), x, CSNumber.mult(x, x)]);
+    coefficients = pslq.find(list);
+    List.println(coefficients);
+
+    if (coefficients.value[1].value.real % 2 == 0) {
+        // if q is even
+
+        // a = -(q / 2) / r
+        a_nom = CSNumber.sub(CSNumber.zero, CSNumber.div(coefficients.value[1], CSNumber.real(2)));
+        a_denom = coefficients.value[2];
+
+        // b = 1 / r
+        b_denom = coefficients.value[2];
+
+        // c = (q^2 / 4) - p * q
+        c = CSNumber.sub(CSNumber.div(CSNumber.mult(coefficients.value[1], coefficients.value[1]), CSNumber.real(4)),
+                         CSNumber.mult(coefficients.value[0], coefficients.value[2]));
+    } else {
+        // a = -q / (2 * r)
+        a_nom = CSNumber.sub(CSNumber.zero, coefficients.value[1]);
+        a_denom = CSNumber.mult(CSNumber.real(2), coefficients.value[2]);
+
+        // b = 1 / (2 * r)
+        b_denom = CSNumber.mult(CSNumber.real(2), coefficients.value[2]);
+
+        // c = q^2 - 4 * p * q
+        c = CSNumber.sub(CSNumber.mult(coefficients.value[1], coefficients.value[1]),
+                         CSNumber.mult(CSNumber.real(4), CSNumber.mult(coefficients.value[0], coefficients.value[2])));
+    }
+
+    a = CSNumber.div(a_nom, a_denom);
+    b = CSNumber.div(CSNumber.real(1), b_denom);
+
+    // If a is zero then we do not need to display it
+    if (!CSNumber._helper.isAlmostZero(a_nom)) {
+        if (a_nom.value.real * a_denom.value.real > 0) {
+            result = CSNumber.niceprint(CSNumber.abs(a_nom));
+        } else {
+            result = '-' + CSNumber.niceprint(CSNumber.abs(a_nom));
+        }
+
+        result += '/' + CSNumber.niceprint(CSNumber.abs(a_denom));
+    } else {
+        result = '';
+    }
+
+    // if c is zero then we already have the result
+    if (CSNumber._helper.isAlmostZero(c)) {
+        return {
+            ctype: 'string',
+            value: result
+        };
+    }
+
+    // x1 = a + b * sqrt(c)
+    var x1 = CSNumber.add(a, CSNumber.mult(b, CSNumber.sqrt(c)));
+    var x2;
+
+    if (CSNumber._helper.isAlmostEqual(x, x1)) {
+        if (b_denom.value.real > 0) {
+            if (result !== '') {
+                result += '+';
+            }
+        } else {
+            result += '-';
+        }
+    } else {
+        // x2 = a - b * sqrt(c)
+        x2 = CSNumber.sub(a, CSNumber.mult(b, CSNumber.sqrt(c)));
+
+        if (CSNumber._helper.isAlmostEqual(x, x2)) {
+            if (b_denom.value.real > 0) {
+                result += '-';
+            } else if (result !== '') {
+                result += '+';
+            }
+        }
+    }
+
+    if (c.value.real < 0) {
+        result += 'i*';
+    }
+
+    if (Math.abs(c.value.real) !== 1) {
+        result += '1/';
+        result += CSNumber.niceprint(CSNumber.abs(b_denom));
+    }
+
+    result += '*sqrt(' + Math.abs(c.value.real) + ')';
+
+    return {
+        "ctype": "string",
+        "value": result
+    };
+};
